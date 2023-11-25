@@ -1,6 +1,6 @@
 package uz.alif.click_up_clone.enums;
 
-public enum WorkspaceUserAddType {
+public enum UserAddType {
     ADD,
     EDIT,
     DELETE

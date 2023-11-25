@@ -10,7 +10,7 @@ import uz.alif.click_up_clone.dtos.WorkspaceUserDto;
 import uz.alif.click_up_clone.entity.*;
 import uz.alif.click_up_clone.enums.WorkspacePermissionName;
 import uz.alif.click_up_clone.enums.WorkspaceRoleName;
-import uz.alif.click_up_clone.enums.WorkspaceUserAddType;
+import uz.alif.click_up_clone.enums.UserAddType;
 import uz.alif.click_up_clone.repository.*;
 import uz.alif.click_up_clone.service.serviceInterface.WorkspaceService;
 
@@ -135,7 +135,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Override
     public ApiResponse addOrEditOrRemoveWorkspaceUser(Long id, WorkspaceUserDto workspaceUserDto) {
-        if (workspaceUserDto.getWorkspaceUserAddType().equals(WorkspaceUserAddType.ADD)) {
+        if (workspaceUserDto.getUserAddType().equals(UserAddType.ADD)) {
             WorkspaceUser save = workspaceUserRepository.save(new WorkspaceUser(
                     workspaceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("workspace")),
                     userRepository.findById(workspaceUserDto.getMemberId()).orElseThrow(() -> new ResourceNotFoundException("user")),
@@ -145,12 +145,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
             ));
 
             return new ApiResponse("created", true, 201, save);
-        } else if (workspaceUserDto.getWorkspaceUserAddType().equals(WorkspaceUserAddType.EDIT)) {
+        } else if (workspaceUserDto.getUserAddType().equals(UserAddType.EDIT)) {
             WorkspaceUser workspaceUser = workspaceUserRepository.findByWorkspaceIdAndUserId(id, workspaceUserDto.getMemberId()).orElseThrow(() -> new ResourceNotFoundException("user"));
             workspaceUser.setWorkspaceRole(workspaceRoleRepository.findById(workspaceUserDto.getRoleId()).orElseThrow(() -> new ResourceNotFoundException("role")));
             WorkspaceUser save = workspaceUserRepository.save(workspaceUser);
             return new ApiResponse("changed", true, 201, save);
-        } else if (workspaceUserDto.getWorkspaceUserAddType().equals(WorkspaceUserAddType.DELETE)) {
+        } else if (workspaceUserDto.getUserAddType().equals(UserAddType.DELETE)) {
             workspaceUserRepository.deleteByWorkspaceIdAndUserId(id, workspaceUserDto.getMemberId());
         }
         return new ApiResponse("un suppoted workspaceuseraddtype", false, 400, null);
