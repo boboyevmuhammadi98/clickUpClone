@@ -3,10 +3,7 @@ package uz.alif.click_up_clone.service.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import uz.alif.click_up_clone.dtos.ApiResponse;
-import uz.alif.click_up_clone.dtos.WorkspaceDto;
-import uz.alif.click_up_clone.dtos.WorkspaceRoleDto;
-import uz.alif.click_up_clone.dtos.WorkspaceUserDto;
+import uz.alif.click_up_clone.dtos.*;
 import uz.alif.click_up_clone.entity.*;
 import uz.alif.click_up_clone.enums.WorkspacePermissionName;
 import uz.alif.click_up_clone.enums.WorkspaceRoleName;
@@ -18,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class WorkspaceServiceImpl implements WorkspaceService {
@@ -165,11 +163,6 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     @Override
-    public List<WorkspaceUser> getWorkspaceUserByWorkspaceId(Long id) {
-        return workspaceUserRepository.findByWorkspaceId(id);
-    }
-
-    @Override
     public List<Workspace> getWorkspaceByUser(User user) {
         return workspaceRepository.findAllByOwner(user);
     }
@@ -189,4 +182,40 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         workspacePermissionRepository.saveAll(workspacePermissions);
         return new ApiResponse("created", true, 201, null);
     }
+
+    @Override
+    public List<WorkspaceUserDtoResponse> getWorkspaceMember(Long id) {
+        List<WorkspaceUser> allByWorkspaceId = workspaceUserRepository.findAllByWorkspaceId(id);
+//        List<WorkspaceUserDtoResponse> workspaceUserDtoResponses = new ArrayList<>();
+//        for (WorkspaceUser workspaceUser : allByWorkspaceId) {
+//            workspaceUserDtoResponses.add(workspaceUserToDto(workspaceUser));
+//        }
+        return allByWorkspaceId.stream().map(this::workspaceUserToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WorkspaceDto> getWorkspacesByUser(User user) {
+        List<WorkspaceUser> allByUserId = workspaceUserRepository.findAllByUserId(user.getId());
+        return allByUserId.stream().map(workspaceUser -> workspaceUserToWorkspaceDto(workspaceUser.getWorkspace())).collect(Collectors.toList());
+    }
+
+    public WorkspaceDto workspaceUserToWorkspaceDto(Workspace workspace) {
+        return new WorkspaceDto(
+                workspace.getName(),
+                workspace.getColor(),
+                workspace.getAvatar() == null ? null : workspace.getAvatar().getId(),
+                workspace.getInitialLetter(),
+                workspace.getId()
+        );
+    }
+
+    public WorkspaceUserDtoResponse workspaceUserToDto(WorkspaceUser workspaceUser) {
+        return new WorkspaceUserDtoResponse(
+                workspaceUser.getUser().getId(),
+                workspaceUser.getUser().getFullName(),
+                workspaceUser.getUser().getEmail(),
+                workspaceUser.getWorkspaceRole().getName()
+        );
+    }
+
 }

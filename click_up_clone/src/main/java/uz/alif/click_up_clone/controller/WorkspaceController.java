@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import uz.alif.click_up_clone.aop.CurrentUser;
 import uz.alif.click_up_clone.dtos.*;
 import uz.alif.click_up_clone.entity.User;
+import uz.alif.click_up_clone.entity.WorkspaceUser;
 import uz.alif.click_up_clone.service.serviceInterface.WorkspaceService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -18,14 +20,16 @@ public class WorkspaceController {
     @Autowired
     WorkspaceService workspaceService;
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<?> getWorkspaceUserByWorkspaceId(@PathVariable Long id) {
-        return ResponseEntity.ok(workspaceService.getWorkspaceUserByWorkspaceId(id));
+    @GetMapping
+    public ResponseEntity<?> getWorkspacesByUser(@CurrentUser User user) {
+        List<WorkspaceDto> workspaceDtos = workspaceService.getWorkspacesByUser(user);
+        return ResponseEntity.ok(workspaceDtos);
     }
 
-    @GetMapping()
-    public ResponseEntity<?> getWorkspaceByUser(@CurrentUser User user) {
-        return ResponseEntity.ok(workspaceService.getWorkspaceByUser(user));
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getWorkspaceMember(@PathVariable Long id) {
+        List<WorkspaceUserDtoResponse> workspaceUsers = workspaceService.getWorkspaceMember(id);
+        return ResponseEntity.ok(workspaceUsers);
     }
 
     @PostMapping()
@@ -69,5 +73,6 @@ public class WorkspaceController {
         ApiResponse apiResponse = workspaceService.addRoleToWorkspace(id, workspaceRoleDto);
         return ResponseEntity.status(apiResponse.getCode()).body(apiResponse);
     }
+
 
 }

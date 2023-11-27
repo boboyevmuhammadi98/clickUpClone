@@ -19,13 +19,16 @@ public class FolderServiceImpl implements FolderService {
     private final FolderRepository folderRepository;
     private final SpaceRepository spaceRepository;
     private final FolderUserRepository folderUserRepository;
+    private final UserRepository userRepository;
 
     public FolderServiceImpl(FolderRepository folderRepository,
                              SpaceRepository spaceRepository,
-                             FolderUserRepository folderUserRepository) {
+                             FolderUserRepository folderUserRepository,
+                             UserRepository userRepository) {
         this.folderRepository = folderRepository;
         this.spaceRepository = spaceRepository;
         this.folderUserRepository = folderUserRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -76,7 +79,24 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public ApiResponse addOrEditOrRemoveFolderUser(UUID id, FolderUserDto folderUserDto) {
-        return null;
+        if (folderUserDto.getUserAddType().equals(UserAddType.ADD)) {
+            Folder folder = folderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("folder"));
+            FolderUser user = folderUserRepository.save(new FolderUser(
+                    folder,
+                    userRepository.findById(folderUserDto.getUserId()).orElseThrow(() -> new ResourceNotFoundException("user")),
+                    folderUserDto.getTaskPermission()
+            ));
+            return new ApiResponse("created", true, 201, user);
+        } else if (folderUserDto.getUserAddType().equals(UserAddType.EDIT)) {
+            FolderUser user = folderUserRepository.findById(folderUserDto.getUserId()).orElseThrow(() -> new ResourceNotFoundException("user"));
+            user.setTaskPermission(folderUserDto.getTaskPermission());
+            FolderUser user1 = folderUserRepository.save(user);
+            return new ApiResponse("changed", true, 201, user1);
+        } else if (folderUserDto.getUserAddType().equals(UserAddType.DELETE)) {
+            folderUserRepository.deleteByFolderIdAndUserId(folderUserDto.getFolderId(), folderUserDto.getUserId());
+            return new ApiResponse("changed", true, 201, null);
+        }
+        return new ApiResponse("un suppoted useraddtype", false, 400, null);
     }
 
 
