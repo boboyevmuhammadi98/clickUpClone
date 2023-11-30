@@ -12,4 +12,17 @@ public class ApiResponse {
     @JsonIgnore
     private int code;
     private Object data;
+
+    public ApiResponse(String message, boolean success, int code) {
+        this.message = message;
+        this.success = success;
+        this.code = code;
+    }
+
+    public ApiResponse(String message, boolean success, int code, Object data) {
+        this.message = message;
+        this.success = success;
+        this.code = code;
+        this.data = data;
+    }
 }

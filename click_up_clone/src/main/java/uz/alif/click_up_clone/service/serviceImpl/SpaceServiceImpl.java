@@ -4,6 +4,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import uz.alif.click_up_clone.dtos.*;
 import uz.alif.click_up_clone.entity.*;
+import uz.alif.click_up_clone.enums.StatusType;
 import uz.alif.click_up_clone.repository.*;
 import uz.alif.click_up_clone.service.serviceInterface.SpaceService;
 
@@ -16,13 +17,16 @@ public class SpaceServiceImpl implements SpaceService {
     private final SpaceRepository spaceRepository;
     private final WorkspaceRepository workspaceRepository;
     private final IconRepository iconRepository;
+    private final StatusRepository statusRepository;
 
     public SpaceServiceImpl(SpaceRepository spaceRepository,
                             WorkspaceRepository workspaceRepository,
-                            IconRepository iconRepository) {
+                            IconRepository iconRepository,
+                            StatusRepository statusRepository) {
         this.spaceRepository = spaceRepository;
         this.workspaceRepository = workspaceRepository;
         this.iconRepository = iconRepository;
+        this.statusRepository = statusRepository;
     }
 
     @Override
@@ -41,6 +45,8 @@ public class SpaceServiceImpl implements SpaceService {
                 iconRepository.findById(spaceDto.getIconId()).orElseThrow(() -> new ResourceNotFoundException("iconId")),
                 spaceDto.getAccessType()
         ));
+        statusRepository.save(new Status("todo", "black", space, StatusType.OPEN));
+        statusRepository.save(new Status("todo", "black", space, StatusType.CLOSED));
         return new ApiResponse("created", true, 201, space);
     }
 
